@@ -1,142 +1,178 @@
-/* Versuchen zu überlegen, wie man bei bestehendem Code das TicTacToe-Feld zu einem TicTacTecTucToe-Feld erweitern kann. */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import Select from 'react-select';
+
+const fieldSizes = [
+    { value: 3, label: '3x3' },
+    { value: 4, label: '4x4' },
+    { value: 5, label: '5x5' },
+    { value: 6, label: '6x6' },
+    { value: 7, label: '7x7' },
+    { value: 8, label: '8x8' },
+    { value: 9, label: '9x9' },
+    { value: 10, label: '10x10' },
+    { value: 11, label: '11x11' },
+    { value: 12, label: '12x12' },
+    { value: 13, label: '13x13' },
+  ]
 
 function Square(props) {
   return (
     <button className="square" onClick={props.onClick}>
       {props.value}
     </button>
-  );
+    );
 }
 
-class Board extends React.Component {
-  renderSquare(i) {
-    return (
-      <Square
-        value={this.props.squares[i]}
-        onClick={() => this.props.onClick(i)}
-      />
-    );
-  }
+class BoardRow extends React.Component {
 
   render() {
+
+    var columns = [];
+    for (var i = 0; i < this.props.fieldSize.value; i++) {
+      const current_location = this.props.idx * this.props.fieldSize.value + i
+      
+      columns.push(<Square 
+        key={current_location}
+        value={this.props.squares[current_location]}
+        onClick={ () => this.props.onClick(current_location)}
+      />);
+     
+    }
+    return (
+    <div className="board-row">
+    {columns}
+    </div>
+    );
+  }
+}
+
+
+class Board extends React.Component {
+
+  
+  render() {
+
+    var rows = [];
+    for (var i = 0; i < this.props.fieldSize.value; i++) {
+      rows.push(<BoardRow 
+        key={i} 
+        idx={i}
+        fieldSize = {this.props.fieldSize}
+        squares = {this.props.squares}
+        onClick = {this.props.onClick}
+        />);
+     
+    }
+
+   
+
     return (
       <div>
-        <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(5)}
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
-          {this.renderSquare(9)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(10)}
-          {this.renderSquare(11)}
-          {this.renderSquare(12)}
-          {this.renderSquare(13)}
-          {this.renderSquare(14)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(15)}
-          {this.renderSquare(16)}
-          {this.renderSquare(17)}
-          {this.renderSquare(18)}
-          {this.renderSquare(19)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(20)}
-          {this.renderSquare(21)}
-          {this.renderSquare(22)}
-          {this.renderSquare(23)}
-          {this.renderSquare(24)}
-        </div>
+        {rows}
       </div>
     );
   }
 }
 
 class Game extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      fieldSize: 5,
-      fieldNumber: this.fieldSize ** 2,
-      history: [
-        {
-          squares: Array(this.fieldNumber).fill(null)
-        }
-      ],
-      stepNumber: 0,
-      xIsNext: true
-    };
-  }
-
   handleClick(i) {
-    const history = this.state.history.slice(0, this.state.stepNumber + 1);
-    const current = history[history.length - 1];
+    const history = this.state.history.slice(0, 
+      this.state.stepNumber +1);
+    const current = history[history.length -1 ];
     const squares = current.squares.slice();
-    if (calculateWinner(squares) || squares[i]) {
+    if (calculateWinnerJens(squares, this.state.fieldSize.value) || squares[i]) {
       return;
     }
-    squares[i] = this.state.xIsNext ? "X" : "O";
+    squares[i] = this.state.xIsNext ? 'X' : 'O';
     this.setState({
-      history: history.concat([
-        {
-          squares: squares
-        }
-      ]),
+      history: history.concat([{
+        squares: squares,
+      }]),
+      xIsNext: !this.state.xIsNext,
       stepNumber: history.length,
-      xIsNext: !this.state.xIsNext
-    });
+    })
   }
+
+  handleChange = fieldSize => {
+    const fieldLength = fieldSize.value * fieldSize.value
+    this.setState({ 
+      fieldSize: fieldSize,
+      });
+    this.setState({ 
+      fieldLength: fieldLength,
+      history: [{
+          squares: Array(fieldLength).fill(null),
+        }], 
+      stepNumber:0,
+      xIsNext: true,
+      });
+  };
 
   jumpTo(step) {
     this.setState({
       stepNumber: step,
-      xIsNext: (step % 2) === 0
+      xIsNext: (step % 2) === 0,
     });
+  }
+
+  constructor(props) {
+    super(props);
+      this.state = {
+        history: [{
+          squares: Array(9).fill(null),
+        }],
+        xIsNext: true,
+        stepNumber:0,
+        fieldSize: { value: 3, label: '3x3' },
+        fieldLength: 9,
+      }
   }
 
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
+    const winner = calculateWinnerJens(current.squares, this.state.fieldSize.value);
+    const { fieldSize } = this.state;
 
-    const moves = history.map((step, move) => {
+    const moves = history.map((step,move) => {
       const desc = move ?
         'Go to move #' + move :
         'Go to game start';
       return (
         <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+          <button onClick={() => this.jumpTo(move)}>
+          {desc} </button>
         </li>
       );
     });
 
+
     let status;
-    if (winner) {
-      status = "Winner: " + winner;
+    if(winner) {
+      status = 'Winner: ' + winner;
     } else {
-      status = "Next player: " + (this.state.xIsNext ? "X" : "O");
+      status = 'Next player: ' + (this.state.xIsNext ? 'X': 'O');
+      if(this.state.stepNumber >= this.state.fieldLength) {
+        status = 'Game is over. No winner.';
+      }
     }
 
     return (
       <div className="game">
+        <div className="game-params">
+          <Select 
+            value = {fieldSize}
+            onChange={this.handleChange}
+            options={fieldSizes}
+            />
+        </div>
         <div className="game-board">
-          <Board
-            fieldSize = {this.state.fieldSize}
+          <Board 
+            fieldSize={fieldSize}
             squares={current.squares}
-            onClick={i => this.handleClick(i)}
+            onClick={(i) => this.handleClick(i)}
           />
         </div>
         <div className="game-info">
@@ -150,7 +186,10 @@ class Game extends React.Component {
 
 // ========================================
 
-ReactDOM.render(<Game />, document.getElementById("root"));
+ReactDOM.render(
+  <Game />,
+  document.getElementById('root')
+);
 
 function winningLines (fieldSize) {
   const lines = [];
@@ -181,7 +220,7 @@ function winningLines (fieldSize) {
       lines[counter] = [k-2*fieldSize+2, k-fieldSize+2, k+2, k+fieldSize+2, k+2*fieldSize+2] /* senkrecht 5*/
       counter++;
 
-      lines[counter] = [k-2+2*fieldSize, k-1+fieldSize, k, k+1-fieldSize, k+2-2*fieldSize] /* diagonal von links unten nach rechts oben */
+      lines[counter] = [k-2+2*fieldSize, k-1+fieldSize, k, k-fieldSize, k+2-2*fieldSize] /* diagonal von links unten nach rechts oben */
       counter++;
       lines[counter] = [k-2-2*fieldSize, k-1-fieldSize, k, k+1+fieldSize, k+2+2*fieldSize] /* diagonal von links oben nach rechts unten */
       counter++;     
@@ -190,11 +229,116 @@ function winningLines (fieldSize) {
   return lines;
 } 
 
-function calculateWinner(squares) {
-  const lines = winningLines(5)
+function calculateWinnerJens(squares, fieldSize) {
+  const lines = winningLines(fieldSize)
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c, d, e] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c] && squares[a] === squares[d] && squares[a] === squares[e]) {
+      return squares[a];
+    }
+  }
+  return null;
+}
+
+function calculateWinner(squares, fieldSize) {
+
+  if(fieldSize === 3) {
+    return calculateWinnerFor3x3(squares);
+  }
+  else {
+    for (var i=0;i<fieldSize;i++) {
+      let o_horizontal = true
+      let o_vertical = true
+      let x_horizontal = true
+      let x_vertical = true
+      for (var j=0;j<fieldSize;j++){
+        let pos_horizontal = i*fieldSize+j;
+        let pos_vertical = j*fieldSize + i;
+        if(squares[pos_horizontal] === null) {
+          o_horizontal = false;
+          x_horizontal = false;
+        }
+        if(squares[pos_vertical] === null) {
+          o_vertical = false;
+          x_vertical = false;
+        }
+        if(squares[pos_horizontal] === 'X') {
+          o_horizontal = false
+        }
+        if(squares[pos_vertical] === 'X') {
+          o_vertical = false
+        }
+        if(squares[pos_horizontal] === 'O') {
+          x_horizontal = false
+        }
+        if(squares[pos_vertical] === 'O') {
+          x_vertical = false
+        }
+      }
+      if(o_horizontal || o_vertical) {
+        return 'O';
+      }
+      if(x_horizontal || x_vertical) {
+        return 'X';
+      }
+    }
+
+    // Dimensional line
+    let o_dim1 = true
+    let o_dim2 = true
+    let x_dim1 = true
+    let x_dim2 = true
+    for (j=0;j<fieldSize;j++){
+      let pos1 = fieldSize*j +j;
+      let pos2 = fieldSize*(fieldSize-1-j)+j;
+      if(squares[pos1] === null) {
+        o_dim1 = false;
+        x_dim1 = false;
+      }
+      if(squares[pos1] === 'X') {
+        o_dim1 = false;
+      }
+      if(squares[pos1] === 'O') {
+        x_dim1 = false;
+      }
+      if(squares[pos2] === null) {
+        o_dim2 = false;
+        x_dim2 = false;
+      }
+      if(squares[pos2] === 'X') {
+        o_dim2 = false;
+      }
+      if(squares[pos2] === 'O') {
+        x_dim2 = false;
+      }
+    }
+    if(o_dim1 || o_dim2) {
+      return 'O';
+    }
+    if(x_dim1 || x_dim2) {
+      return 'X';
+    }
+    
+
+    return null;
+  }
+}
+
+function calculateWinnerFor3x3(squares) {
+  
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
       return squares[a];
     }
   }
