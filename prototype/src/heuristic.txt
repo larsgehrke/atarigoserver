@@ -1,0 +1,35 @@
+board valuation
+------------------
+player = 1 (black) or -1 (white)
+b1 = weight for diffLeastLib
+
+value = function(board, player, depth) {
+  count number of liberties for each group;
+  minBlackLib = number of liberties of black group with least liberties;
+  minWhiteLib = number of liberties of white group with least liberties;
+  allBlackLib = number of liberties of all black groups;
+  allWhiteLib = number of liberties of all white groups;
+  diffAllLib = allBlackLib - allWhiteLib;
+  diffLeastLib = minBlackLib - minWhiteLib;
+  if (player === black and minWhiteLib <= 1): 
+    return inf;
+  if (white and minBlackLib <= 1): 
+    return -inf;
+  if (depth > 0):
+    bestvalue = player * inf;
+    maxEmptyPoints = emptyPoints.length
+    for (let i=0; i<maxEmptyPoints; i++){
+      newBoard = board[emptyPoints[i]] = player;
+      let newValue = value(newBoard, -player, depth - 1);
+      if (player * newValue > player * bestvalue){
+        bestvalue = newValue;
+      }
+    }
+    return bestvalue 
+  else{
+    return (diffAllLib + b1 * diffLeastLib)
+  }
+}
+
+
+
