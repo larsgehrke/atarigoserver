@@ -11,9 +11,9 @@ module.exports = {
 
   /* player: -1 for white, 1 for black */
 
-  playAIMove(currentGame, player) {
+  playAIMove(currentGame, player, legalMoves) {
       // do smart logic
-
+    //console.log(legalMoves.length);
       // return number in [0-80] for your move
     const emptyPoints = [];
     let emptyPointsCounter = 0

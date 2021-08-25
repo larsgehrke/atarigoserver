@@ -14,6 +14,7 @@ import intersection9 from './img/intersection9.png';
 
 
 function Square(props) {
+  
 
   let stone;
   

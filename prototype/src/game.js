@@ -52,6 +52,67 @@ class Game extends React.Component {
 
     return counter;
   }
+
+  isLegalMove(i,isB) {
+    const history = this.state.history.slice(0, 
+      this.state.stepNumber +1);
+    const current = history[history.length -1 ];
+    const field = current.squares.slice();
+    const self = this
+
+    if (field[i] !== 0) {
+      return false;
+    }
+
+    var neighbours = getNeighbourIdxs(i); 
+
+    var liberties = new Set();
+    
+    neighbours.forEach(function(element) {
+      if (field[element] === 0) {
+        liberties.add(element);
+      }
+    });
+
+
+    if(liberties.size === 0) {
+      neighbours.forEach(function(element) {
+        if ((field[element] >0 && isB) || (field[element] <0 && !isB)) {
+          var enemy_liberties = self.groups.get(field[element])
+          if (enemy_liberties) {
+            if (enemy_liberties.size > 1) {
+              return true;
+            }
+            const iterator1 = enemy_liberties.values();
+            if (iterator1.next().value !== i) {
+              return true;
+            }
+          } 
+        }
+
+      });
+      return false;
+    }
+    return true;
+  }
+
+  getAllCurrentLegalMovels() {
+    const history = this.state.history.slice(0, 
+      this.state.stepNumber +1);
+    const current = history[history.length -1 ];
+    const field = current.squares.slice();
+    const self = this
+
+    var result = []
+    for (var i=0; i<field.length; i++) {
+      if(self.isLegalMove(i, self.bIsNext)) {
+        result.push(i);
+      }
+    }
+
+    console.log(result)
+    return result;
+  }
         
 
 
@@ -117,9 +178,12 @@ class Game extends React.Component {
           }
         this.groups.set(friend,liberties_friend);
         if(liberties_friend.size === 0 && this.winner === null) {
-          // Move not allowed
-          return;
+          // Move not allowed, lost the game
+          this.winner = field[i];
         }
+      } else if (self.winner === null && liberties.size === 0) {
+        // Move not allowed, lost the game
+        this.winner = field[i];
       } else {
         field[i] = self.createNewGroup(isB,liberties);
       }
@@ -136,8 +200,7 @@ class Game extends React.Component {
     var aiTurn = function() {
       
       // ask AI for next move
-      var move = ai.playAIMove(field, -1);
-      console.log("AI plays " + move);
+      var move = ai.playAIMove(field, -1, this.getAllCurrentLegalMovels());
       this.handleClick(move);
       
     }
