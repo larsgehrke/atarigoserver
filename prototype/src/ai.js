@@ -1,6 +1,6 @@
 
 /*
-    currentGame: Array with length 80
+    currentGame: Array with length 81
     -> representing 9x9 field
     positive Numbers: black Stone
     negative Numbers: white Stone
