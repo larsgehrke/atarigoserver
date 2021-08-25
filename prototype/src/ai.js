@@ -6,9 +6,21 @@
     negative Numbers: white Stone
     0: empty
 */
-function playAIMove(currentGame) {
+
+/* player: -1 for white, 1 for black */
+
+function playAIMove(currentGame, player) {
     // do smart logic
 
     // return number in [0-80] for your move
-  return 0;
+  const emptyPoints = [];
+  let emptyPointsCounter = 0
+  for (i=0; i<81; i++){
+    if (currentGame[i] === 0){
+      emptyPoints[emptyPointsCounter] = i;
+      emptyPointsCounter++;
+    }
+  }
+  const baseline = emptyPoints[Math.floor(Math.random()*emptyPoints.length)]
+  return baseline;
 }
