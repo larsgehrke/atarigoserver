@@ -1,6 +1,7 @@
 import React from 'react';
 import Select from 'react-select';
 import Board from './board';
+var ai = require('./ai');
 
     
 const fieldSizes = [
@@ -58,7 +59,7 @@ class Game extends React.Component {
     const history = this.state.history.slice(0, 
       this.state.stepNumber +1);
     const current = history[history.length -1 ];
-    const isB = this.state.xIsNext > 0
+    const isB = this.bIsNext
     const field = current.squares.slice();
     const self = this
     if (field[i]!==0 || this.winner) {
@@ -125,24 +126,43 @@ class Game extends React.Component {
     }
 
     if(this.winner) {
-      for (var i=0;i<field.length;i++) {
+      for (i=0;i<field.length;i++) {
         if(field[i] === this.winner) {
           field[i] = 0;
         }
       }
     }
+
+    var aiTurn = function() {
+      
+      // ask AI for next move
+      var move = ai.playAIMove(field, -1);
+      console.log("AI plays " + move);
+      this.handleClick(move);
+      
+    }
+    
+    if(isB) {
+      this.bIsNext = !this.bIsNext;
+      this.setState({
+        history: history.concat([{
+          squares: field,
+        }]),
+        stepNumber: history.length,
+      }, aiTurn);
+    } else {
+      this.bIsNext = !this.bIsNext;
+      this.setState({
+        history: history.concat([{
+          squares: field,
+        }]),
+        stepNumber: history.length,
+      });
+    }
+
     
 
-
-
-
-    this.setState({
-      history: history.concat([{
-        squares: field,
-      }]),
-      xIsNext: !this.state.xIsNext,
-      stepNumber: history.length,
-    })
+    
   };
 
   handleChange = fieldSize => {
@@ -156,7 +176,6 @@ class Game extends React.Component {
           squares: Array(fieldLength).fill(0),
         }], 
       stepNumber:0,
-      xIsNext: true,
       groups: new Map(),
       counter_black_groups: 0,
       counter_white_groups: 0,
@@ -173,9 +192,9 @@ class Game extends React.Component {
   */
 
   jumpTo(step) {
+    this.bIsNext = (step % 2) === 0;
     this.setState({
-      stepNumber: step,
-      xIsNext: (step % 2) === 0,
+      stepNumber: step
     });
   }
 
@@ -185,11 +204,11 @@ class Game extends React.Component {
     this.counter_white_groups = 0;
     this.groups = new Map();
     this.winner = null;
+    this.bIsNext = true;
       this.state = {
         history: [{
           squares: Array(81).fill(0),
         }],
-        xIsNext: true,
         stepNumber:0,
         fieldSize: { value: 9, label: '9x9' },
         fieldLength: 81,
@@ -220,7 +239,7 @@ class Game extends React.Component {
       const winner_str = winner < 0 ?"Black": "White";
       status = 'Winner: ' + winner_str;
     } else {
-      status = 'Next player: ' + (this.state.xIsNext ? 'Black': 'White');
+      status = 'Next player: ' + (this.bIsNext ? 'Black': 'White');
       if(this.state.stepNumber >= this.state.fieldLength) {
         status = 'Game is over. No winner.';
       }
