@@ -181,7 +181,7 @@ function winningLines (fieldSize) {
       lines[counter] = [k-2*fieldSize+2, k-fieldSize+2, k+2, k+fieldSize+2, k+2*fieldSize+2] /* senkrecht 5*/
       counter++;
 
-      lines[counter] = [k-2+2*fieldSize, k-1+fieldSize, k, k-fieldSize, k+2-2*fieldSize] /* diagonal von links unten nach rechts oben */
+      lines[counter] = [k-2+2*fieldSize, k-1+fieldSize, k, k+1-fieldSize, k+2-2*fieldSize] /* diagonal von links unten nach rechts oben */
       counter++;
       lines[counter] = [k-2-2*fieldSize, k-1-fieldSize, k, k+1+fieldSize, k+2+2*fieldSize] /* diagonal von links oben nach rechts unten */
       counter++;     
