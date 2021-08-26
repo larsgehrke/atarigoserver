@@ -251,7 +251,9 @@ class Game extends React.Component {
     }
     
     if(isB) {
+      if(this.winner === null) {
       this.bIsNext = !this.bIsNext;
+      }
       this.setState({
         history: history.concat([{
           squares: field,
@@ -259,7 +261,9 @@ class Game extends React.Component {
         stepNumber: history.length,
       }, aiTurn);
     } else {
+      if(this.winner === null) {
       this.bIsNext = !this.bIsNext;
+      }
       this.setState({
         history: history.concat([{
           squares: field,
