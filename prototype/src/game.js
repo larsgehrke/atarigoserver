@@ -5,25 +5,37 @@ var ai = require('./ai');
 
     
 const fieldSizes = [
+    { value: 1, label: '1x1' },
+    { value: 2, label: '2x2' },
+    { value: 3, label: '3x3' },
+    { value: 4, label: '4x4' },
+    { value: 5, label: '5x5' },
+    { value: 6, label: '6x6' },
+    { value: 7, label: '7x7' },
+    { value: 8, label: '8x8' },
     { value: 9, label: '9x9' },
+    { value: 10, label: '10x10' },
+    { value: 11, label: '11x11' },
+    { value: 12, label: '12x12' },
+    { value: 13, label: '13x13' },
   ]
 
-function getNeighbourIdxs(idx) {
+function getNeighbourIdxs(idx, fieldSize) {
     var neighbours = [];
 
-    if (idx % 9 !== 0){ // Not Left Edge
+    if (idx % fieldSize !== 0){ // Not Left Edge
       neighbours.push(idx - 1);
     }        
-    if (idx > 8) { // Not Top Edge
-      neighbours.push(idx - 9);
+    if (idx > fieldSize - 1) { // Not Top Edge
+      neighbours.push(idx - fieldSize);
     }
         
-    if (idx % 9 !== 8) { // Not Right Edge
+    if (idx % fieldSize !== fieldSize - 1) { // Not Right Edge
       neighbours.push(idx + 1);
     }
         
-    if (idx < 72) { // Not Bottom Edge
-      neighbours.push(idx + 9);
+    if (idx < fieldSize * (fieldSize - 1)) { // Not Bottom Edge
+      neighbours.push(idx + fieldSize);
     }
         
     return neighbours;
@@ -61,9 +73,9 @@ class Game extends React.Component {
       return false;
     }
 
-    var neighbours = getNeighbourIdxs(i); 
+    const neighbours = getNeighbourIdxs(i, this.state.fieldSize.value); 
 
-    var liberties = new Set();
+    const liberties = new Set();
     
     neighbours.forEach(function(element) {
       if (field[element] === 0) {
@@ -91,7 +103,7 @@ class Game extends React.Component {
         } else if ((field[element] <0 && isB) || (field[element] >0 && !isB)) {
           // can capture enemies?
           var enemy_liberties = self.groups.get(field[element])
-          if (enemy_liberties.size == 1) {
+          if (enemy_liberties.size === 1) {
             ret = true;
           }
         }
@@ -136,9 +148,9 @@ class Game extends React.Component {
     const self = this
 
     // get neighbouring points (up to 4)
-    var neighbours = getNeighbourIdxs(i); 
+    const neighbours = getNeighbourIdxs(i, this.state.fieldSize.value); 
 
-    var liberties = new Set();
+    const liberties = new Set();
     
     neighbours.forEach(function(element) {
       if (field[element] === 0) {

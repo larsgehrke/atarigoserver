@@ -24,21 +24,21 @@ function Square(props) {
     stone = <img src={wstone} alt="Black stone" width="100%"/>
   } else if(props.location === 0) {
     stone = <img src={intersection0} alt="Intersection Top Left" width="100%"/>
-  } else if(props.location === 8) {
+  } else if(props.location === props.fieldSize - 1) {
     stone = <img src={intersection2} alt="Intersection Top Right" width="100%"/>
-  } else if(props.location === 72) {
+  } else if(props.location === props.fieldSize * (props.fieldSize - 1)) {
     stone = <img src={intersection5} alt="Intersection Bottom Left" width="100%"/>
-  } else if(props.location === 80) {
+  } else if(props.location === props.fieldSize ** 2 - 1) {
     stone = <img src={intersection7} alt="Intersection Bottom Right" width="100%"/>
-  } else if(props.location > 0 && props.location < 8) {
+  } else if(props.location > 0 && props.location < (props.fieldSize - 1)) {
     stone = <img src={intersection1} alt="Intersection Edge Top" width="100%"/>
-  } else if((props.location-8) % 9 === 0) {
+  } else if((props.location - props.fieldSize + 1) % props.fieldSize === 0) {
     stone = <img src={intersection4} alt="Intersection Edge Right" width="100%"/>
-  } else if(props.location % 9 === 0) {
+  } else if(props.location % props.fieldSize === 0) {
     stone = <img src={intersection3} alt="Intersection Edge Right" width="100%"/>
-  } else if(props.location > 72 && props.location<80) {
+  } else if(props.location > props.fieldSize * (props.fieldSize - 1) && props.location < props.fieldSize ** 2 - 1) {
     stone = <img src={intersection6} alt="Intersection Edge Right" width="100%"/>
-  } else if ([20,24,40,56,60].includes(props.location)) {
+  } else if (props.fieldSize === 9 && [20,24,40,56,60].includes(props.location)) {
     stone = <img src={intersection9} alt="Intersection Edge Right" width="100%"/>
   } else {
     stone = <img src={intersection8} alt="Intersection Edge Right" width="100%"/>
@@ -71,6 +71,7 @@ class BoardRow extends React.Component {
         location={current_location}
         value={this.props.squares[current_location]}
         onClick={ () => this.props.onClick(current_location)}
+        fieldSize={this.props.fieldSize.value}
       />);
      
     }
