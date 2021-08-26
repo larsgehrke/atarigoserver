@@ -5,7 +5,6 @@ var ai = require('./ai');
 
     
 const fieldSizes = [
-    { value: 1, label: '1x1' },
     { value: 2, label: '2x2' },
     { value: 3, label: '3x3' },
     { value: 4, label: '4x4' },
@@ -18,6 +17,14 @@ const fieldSizes = [
     { value: 11, label: '11x11' },
     { value: 12, label: '12x12' },
     { value: 13, label: '13x13' },
+    { value: 14, label: '14x14' },
+    { value: 15, label: '15x15' },
+    { value: 16, label: '16x16' },
+    { value: 17, label: '17x17' },
+    { value: 18, label: '18x18' },
+    { value: 19, label: '19x19' },
+    { value: 20, label: '20x20' },
+    { value: 21, label: '21x21' },
   ]
 
 function getNeighbourIdxs(idx, fieldSize) {
