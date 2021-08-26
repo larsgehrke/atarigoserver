@@ -31,6 +31,10 @@ ol, ul {
   text-align: center;
   width: 34px;
 }
+.legal {
+  /*border: yellowgreen;*/
+  /*border-style: dashed;*/
+}
 
 .square:focus {
   outline: none;

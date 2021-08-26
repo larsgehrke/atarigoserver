@@ -11,18 +11,18 @@ const fieldSizes = [
 function getNeighbourIdxs(idx) {
     var neighbours = [];
 
-    if (idx % 9 !== 0){ // Left
+    if (idx % 9 !== 0){ // Not Left Edge
       neighbours.push(idx - 1);
     }        
-    if (idx > 8) {
+    if (idx > 8) { // Not Top Edge
       neighbours.push(idx - 9);
     }
         
-    if (idx % 9 !== 8) {
+    if (idx % 9 !== 8) { // Not Right Edge
       neighbours.push(idx + 1);
     }
         
-    if (idx < 72) {
+    if (idx < 72) { // Not Bottom Edge
       neighbours.push(idx + 9);
     }
         
@@ -35,7 +35,6 @@ class Game extends React.Component {
 
   createNewGroup(isB, liberties) {
     // create new group
-    var groups = this.groups;
     var counter = null
     
     if(isB) {
@@ -47,8 +46,6 @@ class Game extends React.Component {
       counter = this.counter_white_groups
       this.groups.set(this.counter_white_groups, liberties);
     }
-
-    this.groups = groups
 
     return counter;
   }
@@ -76,22 +73,32 @@ class Game extends React.Component {
 
 
     if(liberties.size === 0) {
+      var ret = false
       neighbours.forEach(function(element) {
         if ((field[element] >0 && isB) || (field[element] <0 && !isB)) {
+          // friends can help me with liberties
+          var friend_liberties = self.groups.get(field[element])
+          
+          
+          if (friend_liberties.size > 1) {
+            ret = true;
+          }
+          const iterator1 = friend_liberties.values();
+          if (iterator1.next().value !== i) {
+            ret = true;
+          }
+          
+        } else if ((field[element] <0 && isB) || (field[element] >0 && !isB)) {
+          // can capture enemies?
           var enemy_liberties = self.groups.get(field[element])
-          if (enemy_liberties) {
-            if (enemy_liberties.size > 1) {
-              return true;
-            }
-            const iterator1 = enemy_liberties.values();
-            if (iterator1.next().value !== i) {
-              return true;
-            }
-          } 
+          if (enemy_liberties.size == 1) {
+            ret = true;
+          }
         }
 
       });
-      return false;
+
+      return ret
     }
     return true;
   }
@@ -110,23 +117,25 @@ class Game extends React.Component {
       }
     }
 
-    console.log(result)
     return result;
   }
         
 
 
   handleClick(i) {
+    if (!this.isLegalMove(i,this.bIsNext)) {
+      // No legal move
+      console.log("No legal move");
+      return;
+    }
     const history = this.state.history.slice(0, 
       this.state.stepNumber +1);
     const current = history[history.length -1 ];
     const isB = this.bIsNext
     const field = current.squares.slice();
     const self = this
-    if (field[i]!==0 || this.winner) {
-      return;
-    }
 
+    // get neighbouring points (up to 4)
     var neighbours = getNeighbourIdxs(i); 
 
     var liberties = new Set();
@@ -148,28 +157,43 @@ class Game extends React.Component {
         if((field[element] <0 && isB) || (field[element] >0 && !isB)) {
 
           // hostile neighbour
-          var enemy_liberties = self.groups.get(field[element])
+          // Reduce liberties of enemy
+          var enemy_liberties = self.groups.get(field[element]);
           enemy_liberties.delete(i);
           self.groups.set(field[element],enemy_liberties);
+
           if(enemy_liberties.size === 0) {
             self.winner = field[element];      
           }
         } else if (field[element] !== 0 && friend === null) {
+          // first friend
           friend = field[element];
         } else if (field[element] !== 0 && friend !== null) {
+          // 2nd, ... friends
           // merge two groups
-          var liberties_1 = self.groups.get(friend)
-          var liberties_2 = self.groups.get(field[element])
-          for (var elem of liberties_2) {
+          var liberties_1 = self.groups.get(friend);
+          var liberties_2 = self.groups.get(field[element]);
+
+          for (let elem of liberties_2) {
               liberties_1.add(elem);
           }
-          self.groups.delete(field[element])
-          self.groups.set(friend, liberties_1)
+          liberties_1.delete(i);
+          self.groups.delete(field[element]);
+          self.groups.set(friend, liberties_1);
+          
+          const groupToDelete = field[element];
+          for (let i=0; i<field.length; i++) {
+            if(field[i] === groupToDelete) {
+              // Overwrite old groupIds with new one
+              field[i] = friend;
+            }
+          }
+
         }
 
       });
 
-      if (friend) {
+      if (friend !== null) {
         field[i] = friend;
         var liberties_friend = this.groups.get(friend);
         liberties_friend.delete(i);
@@ -178,12 +202,12 @@ class Game extends React.Component {
           }
         this.groups.set(friend,liberties_friend);
         if(liberties_friend.size === 0 && this.winner === null) {
-          // Move not allowed, lost the game
-          this.winner = field[i];
+          // Move not allowed
+          return;
         }
       } else if (self.winner === null && liberties.size === 0) {
-        // Move not allowed, lost the game
-        this.winner = field[i];
+        // Move not allowed
+        return;
       } else {
         field[i] = self.createNewGroup(isB,liberties);
       }
@@ -224,8 +248,6 @@ class Game extends React.Component {
     }
 
     
-
-    
   };
 
   handleChange = fieldSize => {
@@ -245,14 +267,6 @@ class Game extends React.Component {
       winner: null,
       });
   };
-
-  /*
-
-  let map = new Map();
-  map.set('key', {'value1', 'value2'});
-  let values = map.get('key');
-
-  */
 
   jumpTo(step) {
     this.bIsNext = (step % 2) === 0;
@@ -319,6 +333,7 @@ class Game extends React.Component {
         </div>
         <div className="game-board">
           <Board 
+            legalMoves= {this.getAllCurrentLegalMovels()}
             fieldSize={fieldSize}
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}

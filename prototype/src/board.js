@@ -44,10 +44,14 @@ function Square(props) {
     stone = <img src={intersection8} alt="Intersection Edge Right" width="100%"/>
   } 
 
+  var className = "square";
+  if(props.legalMoves.includes(props.location)) {
+    className += " legal"
+  }  
 
 
   return (
-    <button className="square" onClick={props.onClick}>
+    <button className={className} onClick={props.onClick}>
       {stone}
     </button>
     );
@@ -63,6 +67,7 @@ class BoardRow extends React.Component {
       
       columns.push(<Square 
         key={current_location}
+        legalMoves= {this.props.legalMoves}
         location={current_location}
         value={this.props.squares[current_location]}
         onClick={ () => this.props.onClick(current_location)}
@@ -91,6 +96,7 @@ class Board extends React.Component {
         fieldSize = {this.props.fieldSize}
         squares = {this.props.squares}
         onClick = {this.props.onClick}
+        legalMoves= {this.props.legalMoves}
         />);
      
     }
