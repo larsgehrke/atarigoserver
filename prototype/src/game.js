@@ -135,9 +135,9 @@ class Game extends React.Component {
 
 
   handleClick(i) {
-    if (!this.isLegalMove(i,this.bIsNext)) {
+    if (!this.isLegalMove(i,this.bIsNext) || this.winner !== null) {
       // No legal move
-      console.log("No legal move");
+      console.log("Move not possible");
       return;
     }
     const history = this.state.history.slice(0, 
@@ -235,9 +235,18 @@ class Game extends React.Component {
 
     var aiTurn = function() {
       
-      // ask AI for next move
-      var move = ai.playAIMove(field, -1, this.getAllCurrentLegalMovels());
-      this.handleClick(move);
+      const allLegalMoves = this.getAllCurrentLegalMovels();
+
+      if(allLegalMoves.length > 0) {
+        // ask AI for next move
+        var move = ai.playAIMove(field, -1, allLegalMoves);
+        this.handleClick(move);
+      } else {
+        // skip whites turn:
+        this.bIsNext = true;
+        this.forceUpdate(); // force re-render
+      }
+      
       
     }
     
@@ -263,7 +272,8 @@ class Game extends React.Component {
   };
 
   handleChange = fieldSize => {
-    const fieldLength = fieldSize.value * fieldSize.value
+    const fieldLength = fieldSize.value * fieldSize.value;
+    this.winner = null;
     this.setState({ 
       fieldSize: fieldSize,
       });
